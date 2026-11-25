@@ -1,0 +1,71 @@
+{
+  "users": {
+    "isdemolm@gmail.com": {
+      "name": "Max",
+      "email": "isdemolm@gmail.com",
+      "password": "deporgol",
+      "location": {
+        "lat": 51.9798731978083,
+        "lng": 5.676375296763346,
+        "updatedAt": 1795605861679
+      }
+    },
+    "krantenmeubilair21@gmail.com": {
+      "name": "het is gelukt",
+      "email": "krantenmeubilair21@gmail.com",
+      "password": "hetisgelukt"
+    }
+  },
+  "messages": [
+    {
+      "id": 1795598601525,
+      "chatId": "isdemolm@gmail.com_krantenmeubilair21@gmail.com",
+      "sender": "krantenmeubilair21@gmail.com",
+      "senderName": "het is gelukt",
+      "text": "jo",
+      "mediaUrl": "",
+      "mediaType": "",
+      "time": 1795598601525
+    },
+    {
+      "id": 1795598612699,
+      "chatId": "isdemolm@gmail.com_krantenmeubilair21@gmail.com",
+      "sender": "isdemolm@gmail.com",
+      "senderName": "Max",
+      "text": "jo max",
+      "mediaUrl": "",
+      "mediaType": "",
+      "time": 1795598612699
+    },
+    {
+      "id": 1795598619784,
+      "chatId": "isdemolm@gmail.com_krantenmeubilair21@gmail.com",
+      "sender": "isdemolm@gmail.com",
+      "senderName": "Max",
+      "text": "",
+      "mediaUrl": "/uploads/1795598619780-images__2_.jpeg",
+      "mediaType": "image",
+      "time": 1795598619784
+    },
+    {
+      "id": 1795598652517,
+      "chatId": "isdemolm@gmail.com_krantenmeubilair21@gmail.com",
+      "sender": "isdemolm@gmail.com",
+      "senderName": "Max",
+      "text": "jo",
+      "mediaUrl": "",
+      "mediaType": "",
+      "time": 1795598652517
+    },
+    {
+      "id": 1795601296880,
+      "chatId": "isdemolm@gmail.com_krantenmeubilair21@gmail.com",
+      "sender": "isdemolm@gmail.com",
+      "senderName": "Max",
+      "text": "",
+      "mediaUrl": "/uploads/1795601296700-GTA6_PS5_Cover_Art_Standard_Edition.jpg",
+      "mediaType": "image",
+      "time": 1795601296880
+    }
+  ]
+}

@@ -1,0 +1,350 @@
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+body {
+  background-color: #0b1120;
+  color: #f8fafc;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.hidden {
+  display: none !important;
+}
+
+/* --- STAP 1: INLOGSCHERM --- */
+.login-overlay {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  padding: 20px;
+  background: radial-gradient(circle at top, #1e293b 0%, #0b1120 75%);
+}
+
+.login-card {
+  background: rgba(30, 41, 59, 0.85);
+  backdrop-filter: blur(12px);
+  padding: 40px 32px;
+  border-radius: 20px;
+  text-align: center;
+  width: 100%;
+  max-width: 400px;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6);
+  border: 1px solid rgba(148, 163, 184, 0.15);
+}
+
+.brand-logo {
+  font-size: 48px;
+  margin-bottom: 12px;
+  display: inline-block;
+  filter: drop-shadow(0 0 12px rgba(99, 102, 241, 0.5));
+}
+
+.login-card h1 {
+  font-size: 28px;
+  font-weight: 700;
+  margin-bottom: 8px;
+  color: #ffffff;
+  letter-spacing: -0.02em;
+}
+
+.login-card p {
+  color: #94a3b8;
+  font-size: 14px;
+  margin-bottom: 24px;
+  line-height: 1.5;
+}
+
+.login-card input {
+  width: 100%;
+  padding: 13px 16px;
+  margin-bottom: 12px;
+  border-radius: 10px;
+  border: 1px solid #334155;
+  background: #0f172a;
+  color: #ffffff;
+  font-size: 14px;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  outline: none;
+}
+
+.login-card input:focus {
+  border-color: #6366f1;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+}
+
+.google-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 13px 20px;
+  margin-top: 4px;
+  background: linear-gradient(135deg, #6366f1, #4f46e5);
+  color: #ffffff;
+  border: none;
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.google-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 15px -3px rgba(99, 102, 241, 0.4);
+}
+
+.google-btn:active {
+  transform: translateY(0);
+}
+
+/* --- STAP 2: HOOFDAPP LAYOUT --- */
+.app-container {
+  display: flex;
+  height: 100vh;
+  width: 100vw;
+}
+
+/* LINKERKANT: ZIJBALK */
+.sidebar {
+  width: 320px;
+  background: #111827;
+  border-right: 1px solid #1f2937;
+  display: flex;
+  flex-direction: column;
+}
+
+.sidebar-header {
+  padding: 18px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #1f2937;
+  background: #0b1120;
+}
+
+.my-profile {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.avatar {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #6366f1;
+  background: #1e293b;
+}
+
+.my-profile h3 {
+  font-size: 15px;
+  font-weight: 600;
+  color: #f8fafc;
+}
+
+.online-badge {
+  font-size: 12px;
+  color: #22c55e;
+  font-weight: 500;
+}
+
+.logout-btn {
+  background: #1f2937;
+  color: #9ca3af;
+  border: 1px solid #374151;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.logout-btn:hover {
+  background: #ef4444;
+  border-color: #ef4444;
+  color: #ffffff;
+}
+
+/* NIEUWE CHAT STARTEN */
+.new-chat-box {
+  padding: 16px;
+  display: flex;
+  gap: 8px;
+  border-bottom: 1px solid #1f2937;
+}
+
+.new-chat-box input {
+  flex: 1;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid #374151;
+  background: #0b1120;
+  color: #ffffff;
+  font-size: 13px;
+  outline: none;
+}
+
+.new-chat-box input:focus {
+  border-color: #6366f1;
+}
+
+.new-chat-box button {
+  padding: 10px 14px;
+  background: #6366f1;
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.new-chat-box button:hover {
+  background: #4f46e5;
+}
+
+.section-label {
+  padding: 16px 20px 8px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: #6b7280;
+}
+
+/* CONTACTENLIJST */
+.chat-list {
+  list-style: none;
+  overflow-y: auto;
+  flex: 1;
+  padding: 0 12px;
+}
+
+.chat-list li {
+  padding: 12px 14px;
+  margin-bottom: 6px;
+  border-radius: 10px;
+  font-size: 14px;
+  color: #e5e7eb;
+  background: rgba(31, 41, 55, 0.4);
+  transition: background 0.15s, transform 0.1s;
+}
+
+.chat-list li:hover {
+  background: #1f2937;
+  transform: translateX(2px);
+}
+
+/* RECHTERKANT: CHATVENSTER */
+.chat-window {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background: #0b1120;
+}
+
+.chat-header {
+  padding: 18px 24px;
+  background: #111827;
+  border-bottom: 1px solid #1f2937;
+}
+
+.active-chat-info h3 {
+  font-size: 16px;
+  font-weight: 600;
+  color: #ffffff;
+}
+
+.active-chat-info .subtitle {
+  font-size: 12px;
+  color: #9ca3af;
+}
+
+/* BERICHTENSTROOM */
+.messages-container {
+  flex: 1;
+  padding: 24px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.messages-container div {
+  color: #0f172a;
+  max-width: 68%;
+  font-size: 14px;
+  line-height: 1.45;
+  word-wrap: break-word;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.25);
+}
+
+.empty-state {
+  margin: auto !important;
+  color: #9ca3af !important;
+  background: #111827 !important;
+  padding: 24px 32px !important;
+  border-radius: 14px !important;
+  border: 1px solid #1f2937;
+  text-align: center;
+  font-size: 14px;
+  max-width: 420px !important;
+}
+
+/* INVOERBALK ONDERAAN */
+.chat-input-area {
+  padding: 16px 24px;
+  background: #111827;
+  border-top: 1px solid #1f2937;
+}
+
+.chat-input-area input[type="text"] {
+  flex: 1;
+  padding: 13px 16px;
+  border-radius: 10px;
+  border: 1px solid #374151;
+  background: #0b1120;
+  color: #ffffff;
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.chat-input-area input[type="text"]:focus {
+  border-color: #6366f1;
+}
+
+.chat-input-area input:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.chat-input-area button {
+  padding: 13px 24px;
+  background: #6366f1;
+  color: #ffffff;
+  border: none;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.chat-input-area button:hover:not(:disabled) {
+  background: #4f46e5;
+}
+
+.chat-input-area button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}

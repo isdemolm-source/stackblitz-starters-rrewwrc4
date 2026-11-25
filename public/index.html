@@ -1,0 +1,1830 @@
+<!DOCTYPE html>
+<html lang="nl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PulseChat — Eigen Server, Profiel & Friends Map</title>
+    <link rel="stylesheet" href="styles.css" />
+    <style>
+      .hidden {
+        display: none !important;
+      }
+      .login-card input {
+        width: 100%;
+        padding: 13px 16px;
+        margin-bottom: 12px;
+        border-radius: 10px;
+        border: 1px solid #334155;
+        background: #0f172a;
+        color: #ffffff;
+        font-size: 14px;
+        outline: none;
+      }
+      .login-card input:focus {
+        border-color: #6366f1;
+      }
+
+      .avatar-wrapper {
+        position: relative;
+        cursor: pointer;
+        display: inline-block;
+      }
+      .avatar-wrapper:hover .avatar {
+        opacity: 0.75;
+      }
+      .avatar-edit-badge {
+        position: absolute;
+        bottom: -2px;
+        right: -2px;
+        background: #6366f1;
+        color: white;
+        font-size: 11px;
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 2px solid #0b1120;
+      }
+      .header-actions {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+      .settings-icon-btn {
+        background: #1f2937;
+        color: #e5e7eb;
+        border: 1px solid #374151;
+        padding: 6px 10px;
+        border-radius: 8px;
+        font-size: 14px;
+        cursor: pointer;
+        transition: background 0.15s;
+      }
+      .settings-icon-btn:hover {
+        background: #374151;
+      }
+
+      .map-nav-btn {
+        margin: 12px 16px 4px;
+        padding: 11px 14px;
+        background: linear-gradient(135deg, #10b981, #059669);
+        color: #ffffff;
+        border: none;
+        border-radius: 10px;
+        font-weight: 600;
+        font-size: 13px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+      }
+
+      .map-view {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        background: #0b1120;
+      }
+      .map-header {
+        padding: 16px 24px;
+        background: #111827;
+        border-bottom: 1px solid #1f2937;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 10px;
+      }
+      .map-controls {
+        display: flex;
+        gap: 8px;
+      }
+      .share-loc-btn {
+        background: #10b981;
+        color: white;
+        border: none;
+        padding: 9px 14px;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 13px;
+        cursor: pointer;
+      }
+      .stop-loc-btn {
+        background: #374151;
+        color: #e5e7eb;
+        border: none;
+        padding: 9px 14px;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 13px;
+        cursor: pointer;
+      }
+      #friends-map {
+        flex: 1;
+        width: 100%;
+        z-index: 1;
+      }
+
+      .friend-pin {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+      }
+      .friend-pin img {
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        border: 3px solid #10b981;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
+        object-fit: cover;
+        background: #1e293b;
+      }
+      .friend-pin.my-pin img {
+        border-color: #6366f1;
+        box-shadow: 0 0 0 6px rgba(99, 102, 241, 0.35),
+          0 4px 12px rgba(0, 0, 0, 0.6);
+      }
+      .friend-pin span {
+        background: #0f172a;
+        color: #ffffff;
+        font-size: 11px;
+        font-weight: 700;
+        padding: 2px 8px;
+        border-radius: 10px;
+        margin-top: 4px;
+        white-space: nowrap;
+        border: 1px solid #334155;
+      }
+      .friend-pin.my-pin span {
+        background: #6366f1;
+        border-color: #818cf8;
+      }
+
+      .modal-backdrop {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.78);
+        backdrop-filter: blur(6px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
+        padding: 16px;
+      }
+      .google-modal {
+        background: #1f1f1f;
+        color: #e3e3e3;
+        width: 100%;
+        max-width: 440px;
+        border-radius: 24px;
+        padding: 20px 24px 24px;
+        box-shadow: 0 25px 50px rgba(0, 0, 0, 0.8);
+        border: 1px solid #333;
+      }
+      .modal-top-bar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 18px;
+      }
+      .modal-top-bar h2 {
+        font-size: 18px;
+        font-weight: 500;
+        color: #ffffff;
+      }
+      .modal-close-btn {
+        background: none;
+        border: none;
+        color: #c4c7c5;
+        font-size: 20px;
+        cursor: pointer;
+        padding: 4px 8px;
+      }
+      .crop-stage {
+        position: relative;
+        width: 260px;
+        height: 260px;
+        margin: 0 auto 18px;
+        background: #111;
+        overflow: hidden;
+        border-radius: 12px;
+        cursor: grab;
+        user-select: none;
+      }
+      .crop-stage:active {
+        cursor: grabbing;
+      }
+      #crop-canvas {
+        display: block;
+        width: 260px;
+        height: 260px;
+      }
+      .crop-frame {
+        position: absolute;
+        inset: 14px;
+        border: 2px solid rgba(255, 255, 255, 0.85);
+        border-radius: 50%;
+        box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.55);
+        pointer-events: none;
+      }
+      .crop-corners {
+        position: absolute;
+        inset: 14px;
+        border: 2px solid rgba(255, 255, 255, 0.35);
+        pointer-events: none;
+      }
+      .crop-controls {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 14px;
+      }
+      .zoom-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        width: 85%;
+        font-size: 13px;
+        color: #9ca3af;
+      }
+      .zoom-row input {
+        flex: 1;
+        accent-color: #a8c7fa;
+      }
+      .rotate-btn {
+        background: transparent;
+        border: none;
+        color: #e3e3e3;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 4px;
+        font-size: 12px;
+        cursor: pointer;
+        padding: 6px 14px;
+        border-radius: 10px;
+      }
+      .rotate-btn:hover {
+        background: rgba(255, 255, 255, 0.08);
+      }
+      .pill-next-btn {
+        background: #a8c7fa;
+        color: #062e6f;
+        border: none;
+        padding: 10px 28px;
+        border-radius: 999px;
+        font-weight: 600;
+        font-size: 14px;
+        cursor: pointer;
+      }
+      .pill-next-btn:hover {
+        background: #c2d7fb;
+      }
+
+      .settings-group {
+        margin-bottom: 18px;
+        text-align: left;
+      }
+      .settings-group label {
+        display: block;
+        font-size: 12px;
+        font-weight: 600;
+        color: #9ca3af;
+        margin-bottom: 8px;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+      }
+      .settings-select {
+        width: 100%;
+        padding: 11px 14px;
+        border-radius: 10px;
+        background: #121212;
+        color: #ffffff;
+        border: 1px solid #3c4043;
+        font-size: 14px;
+        outline: none;
+      }
+      .bg-swatches {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 8px;
+      }
+      .bg-swatch {
+        height: 42px;
+        border-radius: 10px;
+        border: 2px solid transparent;
+        cursor: pointer;
+      }
+      .bg-swatch.active {
+        border-color: #a8c7fa;
+      }
+      .settings-avatar-row {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        background: #121212;
+        padding: 12px;
+        border-radius: 12px;
+        border: 1px solid #3c4043;
+      }
+      .settings-avatar-row img {
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        object-fit: cover;
+      }
+
+      /* Emoji & Sticker Kiezer Pop-up */
+      .chat-input-area {
+        position: relative;
+      }
+      .picker-popover {
+        position: absolute;
+        bottom: 76px;
+        left: 24px;
+        width: 320px;
+        background: #1e293b;
+        border: 1px solid #334155;
+        border-radius: 16px;
+        padding: 12px;
+        box-shadow: 0 20px 35px rgba(0, 0, 0, 0.6);
+        z-index: 500;
+      }
+      .picker-tabs {
+        display: flex;
+        gap: 6px;
+        margin-bottom: 10px;
+        border-bottom: 1px solid #334155;
+        padding-bottom: 8px;
+      }
+      .picker-tab {
+        flex: 1;
+        background: transparent;
+        border: none;
+        color: #94a3b8;
+        padding: 6px;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 13px;
+        cursor: pointer;
+      }
+      .picker-tab.active {
+        background: #6366f1;
+        color: #ffffff;
+      }
+      .emoji-grid {
+        display: grid;
+        grid-template-columns: repeat(7, 1fr);
+        gap: 6px;
+        max-height: 180px;
+        overflow-y: auto;
+      }
+      .emoji-item {
+        font-size: 22px;
+        text-align: center;
+        cursor: pointer;
+        padding: 4px;
+        border-radius: 8px;
+      }
+      .emoji-item:hover {
+        background: #334155;
+      }
+      .sticker-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 8px;
+        max-height: 190px;
+        overflow-y: auto;
+      }
+      .sticker-item {
+        background: #0f172a;
+        border: 1px solid #334155;
+        border-radius: 12px;
+        padding: 10px 6px;
+        text-align: center;
+        cursor: pointer;
+        transition: transform 0.12s;
+      }
+      .sticker-item:hover {
+        transform: scale(1.06);
+        border-color: #6366f1;
+      }
+      .sticker-item .s-icon {
+        font-size: 36px;
+        display: block;
+      }
+      .sticker-item .s-label {
+        font-size: 10px;
+        color: #94a3b8;
+        font-weight: 700;
+        margin-top: 4px;
+        display: block;
+      }
+
+      /* Grote sticker weergave in chat */
+      .chat-sticker-bubble {
+        background: transparent !important;
+        box-shadow: none !important;
+        padding: 4px !important;
+      }
+      .chat-sticker-card {
+        background: linear-gradient(135deg, #1e293b, #0f172a);
+        border: 2px solid #6366f1;
+        border-radius: 18px;
+        padding: 14px 20px;
+        text-align: center;
+        display: inline-block;
+      }
+      .chat-sticker-card .big-emoji {
+        font-size: 58px;
+        display: block;
+        line-height: 1.1;
+      }
+      .chat-sticker-card .sticker-tag {
+        font-size: 11px;
+        font-weight: 800;
+        color: #a8c7fa;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+      }
+
+      .saved-notes-item {
+        border: 1px solid rgba(99, 102, 241, 0.45) !important;
+        background: rgba(99, 102, 241, 0.14) !important;
+      }
+      .media-btn {
+        background: #1e293b !important;
+        border: 1px solid #334155 !important;
+        padding: 10px 12px !important;
+        font-size: 16px !important;
+      }
+      .chat-media {
+        max-width: 260px;
+        max-height: 260px;
+        border-radius: 8px;
+        margin-top: 6px;
+        display: block;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="login-screen" class="login-overlay">
+      <div class="login-card">
+        <div class="brand-logo">⚡</div>
+        <h1 id="t-login-title">Inloggen</h1>
+        <p id="t-login-sub">
+          Log in of maak direct een account aan op jouw eigen server.
+        </p>
+        <div>
+          <input type="text" id="login-name" placeholder="Jouw naam..." />
+          <input
+            type="email"
+            id="login-email"
+            placeholder="Jouw e-mailadres..."
+          />
+          <input
+            type="password"
+            id="login-password"
+            placeholder="Kies een wachtwoord..."
+          />
+          <button type="button" id="login-btn" class="google-btn">
+            Inloggen
+          </button>
+        </div>
+        <p
+          id="status-msg"
+          style="color: #ff4757; margin-top: 12px; font-weight: bold"
+        ></p>
+      </div>
+    </div>
+
+    <div id="app-container" class="app-container hidden">
+      <aside class="sidebar">
+        <header class="sidebar-header">
+          <div class="my-profile">
+            <div
+              class="avatar-wrapper"
+              id="avatar-btn"
+              title="Profielfoto aanpassen"
+            >
+              <img id="my-avatar" src="" alt="Profiel" class="avatar" />
+              <span class="avatar-edit-badge">📷</span>
+            </div>
+            <input
+              type="file"
+              id="avatar-input"
+              accept="image/*"
+              class="hidden"
+            />
+            <div>
+              <h3 id="my-name">Laden...</h3>
+              <span class="online-badge">● Online</span>
+            </div>
+          </div>
+          <div class="header-actions">
+            <button
+              type="button"
+              id="open-settings-btn"
+              class="settings-icon-btn"
+              title="Instellingen"
+            >
+              ⚙️
+            </button>
+            <button type="button" id="logout-btn" class="logout-btn">
+              Uitloggen
+            </button>
+          </div>
+        </header>
+
+        <button type="button" id="open-map-btn" class="map-nav-btn">
+          🌍 Where are your friends?
+        </button>
+
+        <div class="new-chat-box">
+          <input
+            type="email"
+            id="recipient-email"
+            placeholder="Zoek e-mailadres vriend(in)..."
+          />
+          <button type="button" id="start-chat-btn">Start</button>
+        </div>
+
+        <div class="section-label" id="t-all-members">
+          ALLE LEDEN & NOTITIES
+        </div>
+        <ul class="chat-list" id="chat-list"></ul>
+      </aside>
+
+      <main class="chat-window" id="chat-view">
+        <header class="chat-header">
+          <div class="active-chat-info">
+            <h3 id="active-chat-title">Kies of start een gesprek</h3>
+            <span class="subtitle" id="active-chat-subtitle"
+              >Klik links op een persoon (of op jezelf) om te chatten</span
+            >
+          </div>
+        </header>
+
+        <section class="messages-container" id="messages-container">
+          <div class="empty-state">
+            👋 Welkom! Klik links op jezelf om notities of wachtwoorden op te
+            slaan, of op een vriend om te chatten.
+          </div>
+        </section>
+
+        <footer class="chat-input-area">
+          <!-- Emoji & Sticker Kiezer -->
+          <div id="picker-popover" class="picker-popover hidden">
+            <div class="picker-tabs">
+              <button type="button" id="tab-emojis" class="picker-tab active">
+                😀 Emoji's
+              </button>
+              <button type="button" id="tab-stickers" class="picker-tab">
+                ✨ Stickers
+              </button>
+            </div>
+            <div id="emoji-grid" class="emoji-grid"></div>
+            <div id="sticker-grid" class="sticker-grid hidden"></div>
+          </div>
+
+          <div
+            style="display: flex; gap: 8px; width: 100%; align-items: center"
+          >
+            <input
+              type="file"
+              id="media-input"
+              accept="image/*,video/*"
+              class="hidden"
+            />
+            <button
+              type="button"
+              id="media-btn"
+              class="media-btn"
+              title="Foto of video uploaden"
+              disabled
+            >
+              📎
+            </button>
+            <button
+              type="button"
+              id="emoji-btn"
+              class="media-btn"
+              title="Emoji's & Stickers"
+              disabled
+            >
+              😀
+            </button>
+            <input
+              type="text"
+              id="message-input"
+              placeholder="Schrijf een bericht..."
+              disabled
+            />
+            <button type="button" id="send-btn" disabled>Versturen</button>
+          </div>
+        </footer>
+      </main>
+
+      <section class="map-view hidden" id="map-view">
+        <header class="map-header">
+          <div>
+            <h3 style="font-size: 17px; color: #fff">
+              🌍 Where are your friends?
+            </h3>
+            <span id="map-status" style="font-size: 12px; color: #94a3b8"
+              >Jouw locatie wordt bepaald...</span
+            >
+          </div>
+          <div class="map-controls">
+            <button type="button" id="share-loc-btn" class="share-loc-btn">
+              📍 Centreer & Deel locatie
+            </button>
+            <button type="button" id="stop-loc-btn" class="stop-loc-btn">
+              👻 Ghost mode
+            </button>
+          </div>
+        </header>
+        <div id="friends-map"></div>
+      </section>
+    </div>
+
+    <div id="crop-modal" class="modal-backdrop hidden">
+      <div class="google-modal">
+        <div class="modal-top-bar">
+          <button type="button" id="close-crop-btn" class="modal-close-btn">
+            ←
+          </button>
+          <h2 id="t-crop-title">Crop and rotate</h2>
+          <span style="width: 28px"></span>
+        </div>
+
+        <div class="crop-stage" id="crop-stage">
+          <canvas id="crop-canvas" width="260" height="260"></canvas>
+          <div class="crop-corners"></div>
+          <div class="crop-frame"></div>
+        </div>
+
+        <div class="crop-controls">
+          <div class="zoom-row">
+            <span>➖</span>
+            <input
+              type="range"
+              id="crop-zoom"
+              min="0.5"
+              max="3"
+              step="0.05"
+              value="1"
+            />
+            <span>➕</span>
+          </div>
+          <button type="button" id="crop-rotate-btn" class="rotate-btn">
+            <span style="font-size: 20px">↻</span>
+            <span id="t-rotate">Rotate</span>
+          </button>
+          <button type="button" id="crop-save-btn" class="pill-next-btn">
+            Next
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div id="settings-modal" class="modal-backdrop hidden">
+      <div class="google-modal">
+        <div class="modal-top-bar">
+          <h2 id="t-settings-title">⚙️ Instellingen</h2>
+          <button type="button" id="close-settings-btn" class="modal-close-btn">
+            ✕
+          </button>
+        </div>
+
+        <div class="settings-group">
+          <label id="t-lbl-avatar">Profielfoto</label>
+          <div class="settings-avatar-row">
+            <img id="settings-avatar-preview" src="" alt="Avatar" />
+            <button
+              type="button"
+              id="settings-change-avatar"
+              class="pill-next-btn"
+              style="padding: 8px 18px"
+            >
+              Foto wijzigen
+            </button>
+          </div>
+        </div>
+
+        <div class="settings-group">
+          <label id="t-lbl-lang">Taal / Language</label>
+          <select id="lang-select" class="settings-select">
+            <option value="nl">🇳🇱 Nederlands</option>
+            <option value="en">🇬🇧 English</option>
+          </select>
+        </div>
+
+        <div class="settings-group">
+          <label id="t-lbl-bg">Chatachtergrond</label>
+          <div class="bg-swatches" id="bg-swatches">
+            <div
+              class="bg-swatch"
+              data-bg="#0b1120"
+              style="background: #0b1120"
+              title="Standaard Donker"
+            ></div>
+            <div
+              class="bg-swatch"
+              data-bg="linear-gradient(135deg, #1e1b4b, #312e81)"
+              style="background: linear-gradient(135deg, #1e1b4b, #312e81)"
+              title="Midnight Paars"
+            ></div>
+            <div
+              class="bg-swatch"
+              data-bg="linear-gradient(135deg, #064e3b, #0f172a)"
+              style="background: linear-gradient(135deg, #064e3b, #0f172a)"
+              title="Smaragd Groen"
+            ></div>
+            <div
+              class="bg-swatch"
+              data-bg="linear-gradient(135deg, #4c0519, #1e1b4b)"
+              style="background: linear-gradient(135deg, #4c0519, #1e1b4b)"
+              title="Sunset"
+            ></div>
+            <div
+              class="bg-swatch"
+              data-bg="#1e293b"
+              style="background: #1e293b"
+              title="Leigrijs"
+            ></div>
+            <div
+              class="bg-swatch"
+              data-bg="linear-gradient(135deg, #0c4a6e, #082f49)"
+              style="background: linear-gradient(135deg, #0c4a6e, #082f49)"
+              title="Oceaan Blauw"
+            ></div>
+            <div
+              class="bg-swatch"
+              data-bg="#e2e8f0"
+              style="background: #e2e8f0"
+              title="Licht Thema"
+            ></div>
+            <div
+              class="bg-swatch"
+              data-bg="radial-gradient(circle, #3b0764, #090d16)"
+              style="background: radial-gradient(circle, #3b0764, #090d16)"
+              title="Galaxy"
+            ></div>
+          </div>
+        </div>
+
+        <div style="text-align: right; margin-top: 20px">
+          <button type="button" id="save-settings-done" class="pill-next-btn">
+            Gereed
+          </button>
+        </div>
+      </div>
+    </div>
+    <script>
+      const leafletBase =
+        'https://' +
+        new Array('unpkg', 'com').join('.') +
+        '/leaflet@1.9.4/dist';
+      const cssLink = document.createElement('link');
+      cssLink.rel = 'stylesheet';
+      cssLink.href = leafletBase + '/leaflet.css';
+      document.head.appendChild(cssLink);
+
+      const jsScript = document.createElement('script');
+      jsScript.src = leafletBase + '/leaflet.js';
+      document.head.appendChild(jsScript);
+
+      const statusMsg = document.getElementById('status-msg');
+      const AVATAR_HOST = new Array('ui-avatars', 'com').join('.');
+      let currentUser = null;
+      let currentChatId = null;
+      let pollTimer = null;
+      let allUsers = {};
+      let map = null;
+      let markersLayer = null;
+      let watchId = null;
+      let myLocalPosition = null;
+      let ghostMode = false;
+
+      const TRANSLATIONS = {
+        nl: {
+          loginTitle: 'Inloggen',
+          loginSub:
+            'Log in of maak direct een account aan op jouw eigen server.',
+          loginBtn: 'Inloggen',
+          logoutBtn: 'Uitloggen',
+          allMembers: 'ALLE LEDEN & NOTITIES',
+          searchPlaceholder: 'Zoek e-mailadres vriend(in)...',
+          startBtn: 'Start',
+          pickChat: 'Kies of start een gesprek',
+          pickChatSub: 'Klik links op een persoon (of op jezelf) om te chatten',
+          msgPlaceholder: 'Schrijf een bericht...',
+          sendBtn: 'Versturen',
+          settingsTitle: '⚙️ Instellingen',
+          lblAvatar: 'Profielfoto',
+          changeAvatar: 'Foto wijzigen',
+          lblLang: 'Taal / Language',
+          lblBg: 'Chatachtergrond',
+          doneBtn: 'Gereed',
+          cropTitle: 'Bijsnijden en draaien',
+          rotateBtn: 'Draaien',
+          nextBtn: 'Opslaan',
+        },
+        en: {
+          loginTitle: 'Sign in',
+          loginSub: 'Sign in or create an account directly on your own server.',
+          loginBtn: 'Sign in',
+          logoutBtn: 'Log out',
+          allMembers: 'ALL MEMBERS & NOTES',
+          searchPlaceholder: "Search friend's email...",
+          startBtn: 'Start',
+          pickChat: 'Choose or start a chat',
+          pickChatSub: 'Click a person (or yourself) on the left to chat',
+          msgPlaceholder: 'Write a message...',
+          sendBtn: 'Send',
+          settingsTitle: '⚙️ Settings',
+          lblAvatar: 'Profile picture',
+          changeAvatar: 'Change photo',
+          lblLang: 'Language / Taal',
+          lblBg: 'Chat background',
+          doneBtn: 'Done',
+          cropTitle: 'Crop and rotate',
+          rotateBtn: 'Rotate',
+          nextBtn: 'Next',
+        },
+      };
+
+      function pasTaalToe(lang) {
+        const t = TRANSLATIONS[lang] || TRANSLATIONS.nl;
+        localStorage.setItem('pulsechat_lang', lang);
+        document.getElementById('lang-select').value = lang;
+        document.getElementById('t-login-title').textContent = t.loginTitle;
+        document.getElementById('t-login-sub').textContent = t.loginSub;
+        document.getElementById('login-btn').textContent = t.loginBtn;
+        document.getElementById('logout-btn').textContent = t.logoutBtn;
+        document.getElementById('t-all-members').textContent = t.allMembers;
+        document.getElementById('recipient-email').placeholder =
+          t.searchPlaceholder;
+        document.getElementById('start-chat-btn').textContent = t.startBtn;
+        if (!currentChatId) {
+          document.getElementById('active-chat-title').textContent = t.pickChat;
+          document.getElementById('active-chat-subtitle').textContent =
+            t.pickChatSub;
+        }
+        document.getElementById('message-input').placeholder = t.msgPlaceholder;
+        document.getElementById('send-btn').textContent = t.sendBtn;
+        document.getElementById('t-settings-title').textContent =
+          t.settingsTitle;
+        document.getElementById('t-lbl-avatar').textContent = t.lblAvatar;
+        document.getElementById('settings-change-avatar').textContent =
+          t.changeAvatar;
+        document.getElementById('t-lbl-lang').textContent = t.lblLang;
+        document.getElementById('t-lbl-bg').textContent = t.lblBg;
+        document.getElementById('save-settings-done').textContent = t.doneBtn;
+        document.getElementById('t-crop-title').textContent = t.cropTitle;
+        document.getElementById('t-rotate').textContent = t.rotateBtn;
+        document.getElementById('crop-save-btn').textContent = t.nextBtn;
+      }
+
+      function pasAchtergrondToe(bg) {
+        localStorage.setItem('pulsechat_bg', bg);
+        document.getElementById('messages-container').style.background = bg;
+        document.querySelectorAll('.bg-swatch').forEach(function (el) {
+          el.classList.toggle('active', el.dataset.bg === bg);
+        });
+      }
+
+      pasTaalToe(localStorage.getItem('pulsechat_lang') || 'nl');
+      pasAchtergrondToe(localStorage.getItem('pulsechat_bg') || '#0b1120');
+
+      function getAvatarUrl(user) {
+        if (user && user.avatar) return user.avatar;
+        return (
+          'https://' +
+          AVATAR_HOST +
+          '/api/?background=random&name=' +
+          encodeURIComponent((user && user.name) || 'User')
+        );
+      }
+
+      const opgeslagen = localStorage.getItem('pulsechat_eigen_user');
+      if (opgeslagen) {
+        try {
+          openChatOmgeving(JSON.parse(opgeslagen));
+        } catch (e) {}
+      }
+
+      document
+        .getElementById('login-btn')
+        .addEventListener('click', async function () {
+          const name = document.getElementById('login-name').value.trim();
+          const email = document
+            .getElementById('login-email')
+            .value.trim()
+            .toLowerCase();
+          const password = document
+            .getElementById('login-password')
+            .value.trim();
+
+          if (!name || !email || !password) {
+            statusMsg.style.color = '#ff4757';
+            statusMsg.textContent =
+              'Vul je naam, e-mailadres én wachtwoord in!';
+            return;
+          }
+
+          statusMsg.style.color = '#ffa502';
+          statusMsg.textContent = 'Inloggen...';
+
+          try {
+            const res = await fetch('/api/login', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                name: name,
+                email: email,
+                password: password,
+              }),
+            });
+            const data = await res.json();
+
+            if (!res.ok) {
+              statusMsg.style.color = '#ff4757';
+              statusMsg.textContent = data.error || 'Inloggen mislukt';
+              return;
+            }
+
+            localStorage.setItem(
+              'pulsechat_eigen_user',
+              JSON.stringify(data.user)
+            );
+            statusMsg.textContent = '';
+            openChatOmgeving(data.user);
+          } catch (err) {
+            statusMsg.style.color = '#ff4757';
+            statusMsg.textContent =
+              'Server niet bereikbaar. Typ onderin de terminal: npm start';
+          }
+        });
+
+      function openChatOmgeving(user) {
+        currentUser = user;
+        document.getElementById('my-name').textContent = user.name;
+        document.getElementById('my-avatar').src = getAvatarUrl(user);
+        document.getElementById('login-screen').classList.add('hidden');
+        document.getElementById('app-container').classList.remove('hidden');
+
+        verversData();
+        if (pollTimer) clearInterval(pollTimer);
+        pollTimer = setInterval(verversData, 2000);
+      }
+
+      document
+        .getElementById('logout-btn')
+        .addEventListener('click', function () {
+          clearInterval(pollTimer);
+          if (watchId) navigator.geolocation.clearWatch(watchId);
+          localStorage.removeItem('pulsechat_eigen_user');
+          location.reload();
+        });
+
+      let cropImg = null;
+      let cropRotation = 0;
+      let cropZoom = 1;
+      let cropOffsetX = 0;
+      let cropOffsetY = 0;
+      let isDraggingCrop = false;
+      let dragStartX = 0;
+      let dragStartY = 0;
+
+      function tekenCropCanvas() {
+        const canvas = document.getElementById('crop-canvas');
+        const ctx = canvas.getContext('2d');
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        if (!cropImg) return;
+
+        ctx.save();
+        ctx.translate(
+          canvas.width / 2 + cropOffsetX,
+          canvas.height / 2 + cropOffsetY
+        );
+        ctx.rotate((cropRotation * Math.PI) / 180);
+        const baseScale = Math.max(232 / cropImg.width, 232 / cropImg.height);
+        const scale = baseScale * cropZoom;
+        ctx.scale(scale, scale);
+        ctx.drawImage(cropImg, -cropImg.width / 2, -cropImg.height / 2);
+        ctx.restore();
+      }
+
+      document
+        .getElementById('avatar-btn')
+        .addEventListener('click', function () {
+          document.getElementById('avatar-input').click();
+        });
+
+      document
+        .getElementById('avatar-input')
+        .addEventListener('change', function (e) {
+          const file = e.target.files.item(0);
+          if (!file || !currentUser) return;
+
+          const reader = new FileReader();
+          reader.onload = function (ev) {
+            cropImg = new Image();
+            cropImg.onload = function () {
+              cropRotation = 0;
+              cropZoom = 1;
+              cropOffsetX = 0;
+              cropOffsetY = 0;
+              document.getElementById('crop-zoom').value = '1';
+              document.getElementById('settings-modal').classList.add('hidden');
+              document.getElementById('crop-modal').classList.remove('hidden');
+              tekenCropCanvas();
+            };
+            cropImg.src = ev.target.result;
+          };
+          reader.readAsDataURL(file);
+          e.target.value = '';
+        });
+
+      document
+        .getElementById('crop-zoom')
+        .addEventListener('input', function (e) {
+          cropZoom = parseFloat(e.target.value);
+          tekenCropCanvas();
+        });
+
+      document
+        .getElementById('crop-rotate-btn')
+        .addEventListener('click', function () {
+          cropRotation = (cropRotation + 90) % 360;
+          tekenCropCanvas();
+        });
+
+      const cropStage = document.getElementById('crop-stage');
+      cropStage.addEventListener('mousedown', function (e) {
+        isDraggingCrop = true;
+        dragStartX = e.clientX - cropOffsetX;
+        dragStartY = e.clientY - cropOffsetY;
+      });
+      window.addEventListener('mousemove', function (e) {
+        if (!isDraggingCrop) return;
+        cropOffsetX = e.clientX - dragStartX;
+        cropOffsetY = e.clientY - dragStartY;
+        tekenCropCanvas();
+      });
+      window.addEventListener('mouseup', function () {
+        isDraggingCrop = false;
+      });
+
+      document
+        .getElementById('close-crop-btn')
+        .addEventListener('click', function () {
+          document.getElementById('crop-modal').classList.add('hidden');
+        });
+
+      document
+        .getElementById('crop-save-btn')
+        .addEventListener('click', async function () {
+          const srcCanvas = document.getElementById('crop-canvas');
+          const outCanvas = document.createElement('canvas');
+          outCanvas.width = 200;
+          outCanvas.height = 200;
+          outCanvas
+            .getContext('2d')
+            .drawImage(srcCanvas, 14, 14, 232, 232, 0, 0, 200, 200);
+
+          const avatarData = outCanvas.toDataURL('image/jpeg', 0.85);
+
+          try {
+            const res = await fetch('/api/avatar', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                email: currentUser.email,
+                avatarData: avatarData,
+              }),
+            });
+            const data = await res.json();
+            if (res.ok && data.avatar) {
+              currentUser.avatar = data.avatar;
+              localStorage.setItem(
+                'pulsechat_eigen_user',
+                JSON.stringify(currentUser)
+              );
+              document.getElementById('my-avatar').src = data.avatar;
+              document.getElementById('settings-avatar-preview').src =
+                data.avatar;
+              verversData();
+            } else {
+              alert(data.error || 'Kon profielfoto niet opslaan.');
+            }
+          } catch (err) {
+            alert('Fout bij opslaan: ' + err.message);
+          }
+          document.getElementById('crop-modal').classList.add('hidden');
+        });
+
+      document
+        .getElementById('open-settings-btn')
+        .addEventListener('click', function () {
+          document.getElementById('settings-avatar-preview').src =
+            getAvatarUrl(currentUser);
+          document.getElementById('settings-modal').classList.remove('hidden');
+        });
+
+      document
+        .getElementById('close-settings-btn')
+        .addEventListener('click', function () {
+          document.getElementById('settings-modal').classList.add('hidden');
+        });
+
+      document
+        .getElementById('save-settings-done')
+        .addEventListener('click', function () {
+          document.getElementById('settings-modal').classList.add('hidden');
+        });
+
+      document
+        .getElementById('settings-change-avatar')
+        .addEventListener('click', function () {
+          document.getElementById('avatar-input').click();
+        });
+
+      document
+        .getElementById('lang-select')
+        .addEventListener('change', function (e) {
+          pasTaalToe(e.target.value);
+        });
+
+      document.querySelectorAll('.bg-swatch').forEach(function (swatch) {
+        swatch.addEventListener('click', function () {
+          pasAchtergrondToe(swatch.dataset.bg);
+        });
+      });
+      // --- EMOJI'S & WHATSAPP FOTO-STICKER MAKER ---
+      const EMOJI_LIST = new Array(
+        '😀',
+        '😂',
+        '🤣',
+        '😍',
+        '🥳',
+        '😎',
+        '🤯',
+        '😭',
+        '😡',
+        '👍',
+        '👎',
+        '❤️',
+        '🔥',
+        '🚀',
+        '🎉',
+        '👻',
+        '💯',
+        '🙌',
+        '🤝',
+        '👀',
+        '💀',
+        '🤡',
+        '💩',
+        '🍕',
+        '🍔',
+        '⚽',
+        '🎮',
+        '🎵'
+      );
+
+      const DEFAULT_STICKERS = new Array(
+        { icon: '🔥', label: 'LIT!' },
+        { icon: '😂', label: 'HAHAHA' },
+        { icon: '👍', label: 'TOP!' },
+        { icon: '❤️', label: 'LOVE' },
+        { icon: '👻', label: 'BOO!' },
+        { icon: '🚀', label: 'LETS GO' }
+      );
+
+      let customStickers = new Array();
+      try {
+        customStickers = JSON.parse(
+          localStorage.getItem('pulsechat_custom_stickers') || '[]'
+        );
+      } catch (e) {}
+
+      const stickerFileInput = document.createElement('input');
+      stickerFileInput.type = 'file';
+      stickerFileInput.accept = 'image/*';
+      stickerFileInput.className = 'hidden';
+      document.body.appendChild(stickerFileInput);
+
+      const stickerModal = document.createElement('div');
+      stickerModal.id = 'sticker-maker-modal';
+      stickerModal.className = 'modal-backdrop hidden';
+      stickerModal.innerHTML =
+        '<div class="google-modal">' +
+        '  <div class="modal-top-bar">' +
+        '    <h2>✨ WhatsApp Sticker Maken</h2>' +
+        '    <button type="button" id="close-sticker-maker" class="modal-close-btn">✕</button>' +
+        '  </div>' +
+        '  <div style="text-align:center; margin-bottom:14px;">' +
+        '    <canvas id="sticker-canvas" width="240" height="240" style="background:repeating-conic-gradient(#2a2a2a 0% 25%, #1a1a1a 0% 50%) 50% / 20px 20px; border-radius:16px; border:1px solid #444;"></canvas>' +
+        '  </div>' +
+        '  <input type="text" id="sticker-caption" placeholder="Typ tekst (bijv. Monday?)" style="width:100%; padding:11px 14px; margin-bottom:10px; border-radius:10px; background:#121212; color:#fff; border:1px solid #3c4043; font-size:14px; outline:none;">' +
+        '  <label style="display:flex; align-items:center; gap:8px; font-size:13px; color:#cbd5e1; margin-bottom:16px; cursor:pointer;">' +
+        '    <input type="checkbox" id="sticker-cutout" checked> Witte achtergrond automatisch wegknippen' +
+        '  </label>' +
+        '  <div style="display:flex; justify-content:space-between; gap:10px;">' +
+        '    <button type="button" id="sticker-pick-other" class="stop-loc-btn">Andere foto</button>' +
+        '    <button type="button" id="sticker-send-now" class="pill-next-btn">Opslaan & Versturen</button>' +
+        '  </div>' +
+        '</div>';
+      document.body.appendChild(stickerModal);
+
+      let activeStickerImg = null;
+
+      function tekenStickerPreview() {
+        const canvas = document.getElementById('sticker-canvas');
+        const ctx = canvas.getContext('2d');
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        if (!activeStickerImg) return;
+
+        const scale = Math.min(
+          220 / activeStickerImg.width,
+          220 / activeStickerImg.height
+        );
+        const w = activeStickerImg.width * scale;
+        const h = activeStickerImg.height * scale;
+        const x = (canvas.width - w) / 2;
+        const y = (canvas.height - h) / 2;
+        ctx.drawImage(activeStickerImg, x, y, w, h);
+
+        if (document.getElementById('sticker-cutout').checked) {
+          const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+          const d = imgData.data;
+          for (let i = 0; i < d.length; i += 4) {
+            if (d[i] > 235 && d[i + 1] > 235 && d[i + 2] > 235) {
+              d[i + 3] = 0;
+            }
+          }
+          ctx.putImageData(imgData, 0, 0);
+        }
+
+        const caption = document.getElementById('sticker-caption').value.trim();
+        if (caption) {
+          ctx.font = "900 34px Impact, 'Arial Black', sans-serif";
+          ctx.textAlign = 'center';
+          ctx.lineJoin = 'round';
+          ctx.lineWidth = 6;
+          ctx.strokeStyle = '#000000';
+          ctx.strokeText(caption, canvas.width / 2, canvas.height - 16);
+          ctx.fillStyle = '#ffffff';
+          ctx.fillText(caption, canvas.width / 2, canvas.height - 16);
+        }
+      }
+
+      stickerFileInput.addEventListener('change', function (e) {
+        const file = e.target.files.item(0);
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = function (ev) {
+          activeStickerImg = new Image();
+          activeStickerImg.onload = function () {
+            document.getElementById('sticker-caption').value = '';
+            document.getElementById('picker-popover').classList.add('hidden');
+            stickerModal.classList.remove('hidden');
+            tekenStickerPreview();
+          };
+          activeStickerImg.src = ev.target.result;
+        };
+        reader.readAsDataURL(file);
+        e.target.value = '';
+      });
+
+      document
+        .getElementById('sticker-caption')
+        .addEventListener('input', tekenStickerPreview);
+      document
+        .getElementById('sticker-cutout')
+        .addEventListener('change', tekenStickerPreview);
+      document
+        .getElementById('sticker-pick-other')
+        .addEventListener('click', function () {
+          stickerFileInput.click();
+        });
+      document
+        .getElementById('close-sticker-maker')
+        .addEventListener('click', function () {
+          stickerModal.classList.add('hidden');
+        });
+
+      document
+        .getElementById('sticker-send-now')
+        .addEventListener('click', async function () {
+          const canvas = document.getElementById('sticker-canvas');
+          const pngData = canvas.toDataURL('image/png');
+          customStickers.unshift(pngData);
+          if (customStickers.length > 12) customStickers.pop();
+          localStorage.setItem(
+            'pulsechat_custom_stickers',
+            JSON.stringify(customStickers)
+          );
+          renderStickerGrid();
+          stickerModal.classList.add('hidden');
+          await verstuurStickerCode('[PHOTO_STICKER]' + pngData);
+        });
+
+      function renderStickerGrid() {
+        const sGrid = document.getElementById('sticker-grid');
+        sGrid.innerHTML = '';
+
+        const createBtn = document.createElement('div');
+        createBtn.className = 'sticker-item';
+        createBtn.style.borderColor = '#10b981';
+        createBtn.innerHTML =
+          '<span class="s-icon">➕</span><span class="s-label" style="color:#10b981;">MAAK STICKER</span>';
+        createBtn.onclick = function () {
+          stickerFileInput.click();
+        };
+        sGrid.appendChild(createBtn);
+
+        customStickers.forEach(function (dataUrl) {
+          const div = document.createElement('div');
+          div.className = 'sticker-item';
+          const img = document.createElement('img');
+          img.src = dataUrl;
+          img.style.cssText =
+            'width:64px; height:64px; object-fit:contain; display:block; margin:0 auto;';
+          div.appendChild(img);
+          div.onclick = async function () {
+            document.getElementById('picker-popover').classList.add('hidden');
+            await verstuurStickerCode('[PHOTO_STICKER]' + dataUrl);
+          };
+          sGrid.appendChild(div);
+        });
+
+        DEFAULT_STICKERS.forEach(function (st) {
+          const div = document.createElement('div');
+          div.className = 'sticker-item';
+          div.innerHTML =
+            '<span class="s-icon">' +
+            st.icon +
+            '</span><span class="s-label">' +
+            st.label +
+            '</span>';
+          div.onclick = async function () {
+            document.getElementById('picker-popover').classList.add('hidden');
+            await verstuurStickerCode('[STICKER]' + st.icon + '|' + st.label);
+          };
+          sGrid.appendChild(div);
+        });
+      }
+
+      const eGrid = document.getElementById('emoji-grid');
+      EMOJI_LIST.forEach(function (em) {
+        const span = document.createElement('span');
+        span.className = 'emoji-item';
+        span.textContent = em;
+        span.onclick = function () {
+          const inp = document.getElementById('message-input');
+          inp.value += em;
+          inp.focus();
+        };
+        eGrid.appendChild(span);
+      });
+      renderStickerGrid();
+
+      document
+        .getElementById('emoji-btn')
+        .addEventListener('click', function () {
+          document.getElementById('picker-popover').classList.toggle('hidden');
+        });
+      document
+        .getElementById('tab-emojis')
+        .addEventListener('click', function () {
+          document.getElementById('tab-emojis').classList.add('active');
+          document.getElementById('tab-stickers').classList.remove('active');
+          document.getElementById('emoji-grid').classList.remove('hidden');
+          document.getElementById('sticker-grid').classList.add('hidden');
+        });
+      document
+        .getElementById('tab-stickers')
+        .addEventListener('click', function () {
+          document.getElementById('tab-stickers').classList.add('active');
+          document.getElementById('tab-emojis').classList.remove('active');
+          document.getElementById('sticker-grid').classList.remove('hidden');
+          document.getElementById('emoji-grid').classList.add('hidden');
+        });
+
+      async function verstuurStickerCode(code) {
+        if (!currentChatId || !currentUser) return;
+        const formData = new FormData();
+        formData.append('chatId', currentChatId);
+        formData.append('sender', currentUser.email);
+        formData.append('senderName', currentUser.name);
+        formData.append('text', code);
+        await fetch('/api/send', { method: 'POST', body: formData });
+        verversData();
+      }
+      // --- KAART (WHERE ARE YOUR FRIENDS?) ---
+      document
+        .getElementById('open-map-btn')
+        .addEventListener('click', function () {
+          document.getElementById('chat-view').classList.add('hidden');
+          document.getElementById('map-view').classList.remove('hidden');
+
+          if (!map && window.L) {
+            map = L.map('friends-map').setView(new Array(52.1326, 5.2913), 8);
+            const tileHost = new Array('tile', 'openstreetmap', 'org').join(
+              '.'
+            );
+            L.tileLayer('https://' + tileHost + '/{z}/{x}/{y}.png', {
+              attribution: '&copy; OpenStreetMap',
+            }).addTo(map);
+            markersLayer = L.layerGroup().addTo(map);
+          }
+
+          setTimeout(function () {
+            if (map) {
+              map.invalidateSize();
+              if (!ghostMode) startLiveLocatie(true);
+              updateKaartMarkers();
+            }
+          }, 150);
+        });
+
+      function startLiveLocatie(centreerKaart) {
+        const mapStatus = document.getElementById('map-status');
+        if (!navigator.geolocation) {
+          mapStatus.textContent = 'Je browser ondersteunt geen locatie delen.';
+          return;
+        }
+        ghostMode = false;
+        mapStatus.style.color = '#ffa502';
+        mapStatus.textContent =
+          'Locatie ophalen (sta toegang toe in je browser)...';
+
+        if (watchId) navigator.geolocation.clearWatch(watchId);
+        watchId = navigator.geolocation.watchPosition(
+          async function (pos) {
+            const latitude = pos.coords.latitude;
+            const longitude = pos.coords.longitude;
+            myLocalPosition = { lat: latitude, lng: longitude };
+
+            mapStatus.style.color = '#22c55e';
+            mapStatus.textContent =
+              '● Jouw profielfoto staat live op je huidige locatie';
+
+            if (centreerKaart && map) {
+              map.setView(new Array(latitude, longitude), 15);
+              centreerKaart = false;
+            }
+
+            updateKaartMarkers();
+
+            await fetch('/api/location', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                email: currentUser.email,
+                lat: latitude,
+                lng: longitude,
+              }),
+            });
+          },
+          function (err) {
+            mapStatus.style.color = '#ff4757';
+            mapStatus.textContent = 'Locatie niet beschikbaar: ' + err.message;
+          },
+          { enableHighAccuracy: true }
+        );
+      }
+
+      document
+        .getElementById('share-loc-btn')
+        .addEventListener('click', function () {
+          startLiveLocatie(true);
+        });
+
+      document
+        .getElementById('stop-loc-btn')
+        .addEventListener('click', async function () {
+          ghostMode = true;
+          myLocalPosition = null;
+          if (watchId) {
+            navigator.geolocation.clearWatch(watchId);
+            watchId = null;
+          }
+          await fetch('/api/location', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              email: currentUser.email,
+              lat: null,
+              lng: null,
+            }),
+          });
+          const mapStatus = document.getElementById('map-status');
+          mapStatus.style.color = '#94a3b8';
+          mapStatus.textContent =
+            '👻 Ghost mode actief: je bent verborgen op de kaart.';
+          verversData();
+        });
+
+      function updateKaartMarkers() {
+        if (!map || !markersLayer || !window.L) return;
+        markersLayer.clearLayers();
+
+        if (currentUser && !ghostMode) {
+          const mijnLoc =
+            myLocalPosition ||
+            (allUsers[currentUser.email] &&
+              allUsers[currentUser.email].location);
+          if (mijnLoc && mijnLoc.lat != null) {
+            const myAvatarSrc = getAvatarUrl(currentUser);
+            const myIcon = L.divIcon({
+              className: '',
+              html:
+                '<div class="friend-pin my-pin"><img src="' +
+                myAvatarSrc +
+                '"><span>' +
+                currentUser.name +
+                ' (Jij)</span></div>',
+              iconSize: new Array(70, 74),
+              iconAnchor: new Array(35, 37),
+            });
+            const myMarker = L.marker(new Array(mijnLoc.lat, mijnLoc.lng), {
+              icon: myIcon,
+              zIndexOffset: 1000,
+            });
+            myMarker.bindPopup(
+              '<strong>' + currentUser.name + ' (Jij)</strong>'
+            );
+            markersLayer.addLayer(myMarker);
+          }
+        }
+
+        Object.values(allUsers).forEach(function (u) {
+          if (u.email === currentUser.email) return;
+          if (!u.location || u.location.lat == null) return;
+
+          const avatarSrc = getAvatarUrl(u);
+          const customIcon = L.divIcon({
+            className: '',
+            html:
+              '<div class="friend-pin"><img src="' +
+              avatarSrc +
+              '"><span>' +
+              u.name +
+              '</span></div>',
+            iconSize: new Array(64, 68),
+            iconAnchor: new Array(32, 34),
+          });
+
+          const marker = L.marker(new Array(u.location.lat, u.location.lng), {
+            icon: customIcon,
+          });
+          marker.bindPopup('<strong>' + u.name + '</strong><br>' + u.email);
+          marker.on('dblclick', function () {
+            openChat(u);
+          });
+          markersLayer.addLayer(marker);
+        });
+      }
+
+      // --- LEDENLIJST (INCLUSIEF CHAT MET JEZELF) & BERICHTEN ---
+      async function verversData() {
+        try {
+          const url =
+            '/api/data' +
+            (currentChatId
+              ? '?chatId=' + encodeURIComponent(currentChatId)
+              : '');
+          const res = await fetch(url);
+          const data = await res.json();
+          toonGebruikersLijst(data.users || new Array());
+          updateKaartMarkers();
+          if (currentChatId) toonBerichten(data.messages || new Array());
+        } catch (e) {}
+      }
+
+      function toonGebruikersLijst(users) {
+        const list = document.getElementById('chat-list');
+        list.innerHTML = '';
+        allUsers = {};
+
+        // Zet altijd "📌 Jij (Opgeslagen berichten)" bovenaan
+        const selfUser = {
+          name: currentUser.name + ' (Jij)',
+          email: currentUser.email,
+          avatar: currentUser.avatar,
+        };
+        const selfLi = document.createElement('li');
+        selfLi.className = 'saved-notes-item';
+        selfLi.style.cssText =
+          'display:flex; align-items:center; gap:10px; cursor:pointer;';
+        const selfImg = document.createElement('img');
+        selfImg.src = getAvatarUrl(currentUser);
+        selfImg.style.cssText =
+          'width:32px; height:32px; border-radius:50%; object-fit:cover;';
+        const selfSpan = document.createElement('span');
+        selfSpan.textContent = '📌 Jij (Notities & Wachtwoorden)';
+        selfLi.appendChild(selfImg);
+        selfLi.appendChild(selfSpan);
+        selfLi.onclick = function () {
+          openChat(selfUser);
+        };
+        list.appendChild(selfLi);
+
+        users.forEach(function (u) {
+          allUsers[u.email] = u;
+          if (u.email === currentUser.email) return;
+
+          const li = document.createElement('li');
+          li.style.cssText =
+            'display:flex; align-items:center; gap:10px; cursor:pointer;';
+          const img = document.createElement('img');
+          img.src = getAvatarUrl(u);
+          img.style.cssText =
+            'width:32px; height:32px; border-radius:50%; object-fit:cover;';
+          const span = document.createElement('span');
+          span.textContent = u.name + (u.location ? ' 📍' : '');
+          li.appendChild(img);
+          li.appendChild(span);
+          li.onclick = function () {
+            openChat(u);
+          };
+          list.appendChild(li);
+        });
+      }
+
+      document
+        .getElementById('start-chat-btn')
+        .addEventListener('click', function () {
+          const q = document
+            .getElementById('recipient-email')
+            .value.trim()
+            .toLowerCase();
+          if (q === currentUser.email) {
+            openChat({
+              name: currentUser.name + ' (Jij)',
+              email: currentUser.email,
+              avatar: currentUser.avatar,
+            });
+            return;
+          }
+          const found = Object.values(allUsers).find(function (u) {
+            return (
+              (u.email === q || u.name.toLowerCase() === q) &&
+              u.email !== currentUser.email
+            );
+          });
+          if (!found)
+            return alert(
+              'Account niet gevonden! Laat je vriend eerst inloggen.'
+            );
+          openChat(found);
+        });
+
+      function openChat(friend) {
+        document.getElementById('map-view').classList.add('hidden');
+        document.getElementById('chat-view').classList.remove('hidden');
+        currentChatId = new Array(currentUser.email, friend.email)
+          .sort()
+          .join('_');
+        document.getElementById('active-chat-title').textContent = friend.name;
+        document.getElementById('active-chat-subtitle').textContent =
+          friend.email === currentUser.email
+            ? 'Privé notities & wachtwoorden (alleen voor jou zichtbaar)'
+            : friend.email;
+        document.getElementById('message-input').disabled = false;
+        document.getElementById('send-btn').disabled = false;
+        document.getElementById('media-btn').disabled = false;
+        document.getElementById('emoji-btn').disabled = false;
+        verversData();
+      }
+
+      function toonBerichten(messages) {
+        const container = document.getElementById('messages-container');
+        const wasOnderaan =
+          container.scrollTop + container.clientHeight >=
+          container.scrollHeight - 40;
+        container.innerHTML = '';
+
+        messages.forEach(function (msg) {
+          const isMe = msg.sender === currentUser.email;
+          const div = document.createElement('div');
+
+          // 1. WhatsApp Foto-Sticker (zonder achtergrondballon!)
+          if (msg.text && msg.text.indexOf('[PHOTO_STICKER]') === 0) {
+            const imgSrc = msg.text.replace('[PHOTO_STICKER]', '');
+            div.className = 'chat-sticker-bubble';
+            div.style.cssText =
+              'margin:6px 0; align-self:' +
+              (isMe ? 'flex-end' : 'flex-start') +
+              ';';
+            const stImg = document.createElement('img');
+            stImg.src = imgSrc;
+            stImg.style.cssText =
+              'width:165px; height:165px; object-fit:contain; display:block;';
+            div.appendChild(stImg);
+            container.appendChild(div);
+            return;
+          }
+
+          // 2. Standaard Emoji-Sticker
+          if (msg.text && msg.text.indexOf('[STICKER]') === 0) {
+            const parts = msg.text.replace('[STICKER]', '').split('|');
+            div.className = 'chat-sticker-bubble';
+            div.style.cssText =
+              'margin:8px 0; align-self:' +
+              (isMe ? 'flex-end' : 'flex-start') +
+              ';';
+            div.innerHTML =
+              '<div class="chat-sticker-card"><span class="big-emoji">' +
+              parts[0] +
+              '</span><span class="sticker-tag">' +
+              (parts[1] || '') +
+              '</span></div>';
+            container.appendChild(div);
+            return;
+          }
+
+          // 3. Normaal tekst-, foto- of videobericht
+          div.style.cssText =
+            'margin:8px 0;padding:10px 14px;border-radius:10px;background:' +
+            (isMe ? '#dcf8c6' : '#ffffff') +
+            ';align-self:' +
+            (isMe ? 'flex-end' : 'flex-start') +
+            ';';
+          const strong = document.createElement('strong');
+          strong.textContent = (isMe ? 'Jij' : msg.senderName) + ': ';
+          div.appendChild(strong);
+          if (msg.text) div.appendChild(document.createTextNode(msg.text));
+
+          if (msg.mediaUrl && msg.mediaType === 'image') {
+            const img = document.createElement('img');
+            img.src = msg.mediaUrl;
+            img.className = 'chat-media';
+            div.appendChild(img);
+          } else if (msg.mediaUrl && msg.mediaType === 'video') {
+            const vid = document.createElement('video');
+            vid.src = msg.mediaUrl;
+            vid.controls = true;
+            vid.className = 'chat-media';
+            div.appendChild(vid);
+          }
+          container.appendChild(div);
+        });
+
+        if (wasOnderaan) container.scrollTop = container.scrollHeight;
+      }
+
+      async function verstuur(file) {
+        const input = document.getElementById('message-input');
+        const text = input.value.trim();
+        if ((!text && !file) || !currentChatId || !currentUser) return;
+        input.value = '';
+        document.getElementById('picker-popover').classList.add('hidden');
+
+        const formData = new FormData();
+        formData.append('chatId', currentChatId);
+        formData.append('sender', currentUser.email);
+        formData.append('senderName', currentUser.name);
+        formData.append('text', text);
+        if (file) formData.append('media', file);
+
+        await fetch('/api/send', { method: 'POST', body: formData });
+        verversData();
+      }
+
+      document
+        .getElementById('media-btn')
+        .addEventListener('click', function () {
+          document.getElementById('media-input').click();
+        });
+
+      document
+        .getElementById('media-input')
+        .addEventListener('change', function (e) {
+          const file = e.target.files.item(0);
+          if (file) verstuur(file);
+          e.target.value = '';
+        });
+
+      document
+        .getElementById('send-btn')
+        .addEventListener('click', function () {
+          verstuur(null);
+        });
+      document
+        .getElementById('message-input')
+        .addEventListener('keypress', function (e) {
+          if (e.key === 'Enter') verstuur(null);
+        });
+    </script>
+  </body>
+</html>
